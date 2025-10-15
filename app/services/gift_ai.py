@@ -1,0 +1,1 @@
+# Gift AI logic placeholder
