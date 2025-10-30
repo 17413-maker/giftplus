@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gifté+ | Choose Mode</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #fff5f7, #ffe4ec, #ffd5e3);
+      overflow-x: hidden;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in-up { opacity: 0; animation: fadeInUp 1s ease forwards; }
+    .fade-delay-1 { animation-delay: 0.4s; }
+    .fade-delay-2 { animation-delay: 0.8s; }
+    .fade-delay-3 { animation-delay: 1.2s; }
+
+    #secretDev {
+      position: fixed;
+      right: 12px;
+      bottom: 12px;
+      width: 40px;
+      height: 40px;
+      background: transparent;
+      border: 0;
+      opacity: 0;
+      cursor: pointer;
+      z-index: 9999;
+    }
+
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); align-items: center; justify-content: center; z-index: 10000; padding: 18px; }
+    .overlay.show { display: flex; }
+    .dev-modal { background: white; border-radius: 12px; padding: 18px; width: 360px; max-width: calc(100% - 40px); box-shadow: 0 26px 80px rgba(2,6,23,0.18); }
+    .dev-modal h3 { margin: 0 0 8px 0; font-size: 18px; }
+    .dev-input { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid #e6e9f2; margin-top: 8px; font-size: 16px; }
+    .dev-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:12px; }
+    .dev-btn { padding:8px 12px; border-radius:10px; cursor:pointer; font-weight:600; }
+    .dev-btn.primary { background: linear-gradient(90deg,#ffafcc,#ffd166); color:#111; border:0; }
+    .dev-btn.ghost { background:transparent; border:1px solid #eef2ff; color:#444; }
+
+    .small-note { font-size:12px; color:#6b7280; margin-top:6px; }
+  </style>
+</head>
+<body class="text-gray-800">
+
+  <!-- Navbar -->
+  <nav class="flex justify-between items-center px-10 py-5 bg-white/70 backdrop-blur-md shadow-sm sticky top-0 z-50">
+    <h1 class="text-3xl font-bold text-pink-600 tracking-tight">Gifté+</h1>
+
+    <div class="flex items-center gap-6">
+      <a href="home.html" class="text-gray-600 hover:text-pink-600 transition text-lg">Home</a>
+      <a href="login.html" class="text-gray-600 hover:text-pink-600 transition text-lg">Login</a>
+      <a href="signup.html" class="bg-gradient-to-r from-pink-400 to-yellow-300 text-white px-5 py-2 rounded-full font-semibold shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300">Sign Up</a>
+    </div>
+  </nav>
+
+  <!-- Intro Section -->
+  <section class="text-center py-20 px-8 bg-gradient-to-r from-pink-100 via-pink-50 to-white">
+    <h2 class="text-5xl font-extrabold text-gray-800 mb-4 fade-in-up">Choose Your Mode</h2>
+    <p class="text-lg text-gray-700 max-w-2xl mx-auto fade-in-up fade-delay-1 leading-relaxed">
+      Gifté+ is more than a gift finder — it’s a story we build around people.  
+      Pick the path that fits your rhythm: <strong>Manual Mode</strong> for control, <strong>Automatic Mode</strong> for effortless precision.
+    </p>
+  </section>
+
+  <!-- Mode Selection -->
+  <section class="py-20 bg-white relative overflow-hidden">
+    <div class="absolute top-0 left-0 w-80 h-80 bg-pink-200 rounded-full blur-3xl opacity-30 -z-10 animate-pulse"></div>
+    <div class="absolute bottom-0 right-0 w-96 h-96 bg-pink-100 rounded-full blur-3xl opacity-40 -z-10 animate-pulse"></div>
+
+    <div class="flex flex-col md:flex-row justify-center items-center gap-12 px-6">
+      
+      <!-- Manual Mode Card -->
+      <div onclick="goWithConsent('manual')" class="cursor-pointer bg-pink-50 shadow-2xl rounded-2xl p-10 text-center max-w-sm hover:-translate-y-3 hover:shadow-pink-200/80 transition-all duration-500 fade-in-up fade-delay-1">
+        <img src="https://cdn-icons-png.flaticon.com/512/3062/3062600.png" alt="Manual Mode" class="mx-auto w-28 mb-6 animate-bounce">
+        <h3 class="text-2xl font-semibold mb-3 text-gray-800">Manual Mode</h3>
+        <p class="text-gray-600 text-sm leading-relaxed">
+          Perfect for thinkers and creators. You guide the algorithm manually and craft every nuance.
+        </p>
+      </div>
+
+      <!-- Automatic Mode Card -->
+      <div onclick="goWithConsent('automatic')" class="cursor-pointer bg-pink-50 shadow-2xl rounded-2xl p-10 text-center max-w-sm hover:-translate-y-3 hover:shadow-pink-200/80 transition-all duration-500 fade-in-up fade-delay-2">
+        <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" alt="Automatic Mode" class="mx-auto w-28 mb-6 animate-bounce">
+        <h3 class="text-2xl font-semibold mb-3 text-gray-800">Automatic Mode</h3>
+        <p class="text-gray-600 text-sm leading-relaxed">
+          Let Gifté+ do the work. AI analyzes subtle signals to generate perfect gift ideas instantly.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="text-center py-8 text-gray-500 text-sm">
+    © 2025 Gifté+. Designed with ❤️ and logic by Delta-1 & Commander.
+  </footer>
+
+  <!-- SECRET INVISIBLE BUTTON -->
+  <button id="secretDev" title="Developer access (invisible)"></button>
+
+  <!-- DEV PASSWORD MODAL -->
+  <div id="devOverlay" class="overlay" aria-hidden="true">
+    <div class="dev-modal" role="dialog" aria-modal="true">
+      <h3>Developer Access</h3>
+      <div class="small-note">Enter the access password (input is hidden while you type).</div>
+      <input id="devPassword" class="dev-input" type="password" placeholder="Enter password" autocomplete="current-password" />
+      <div class="dev-actions">
+        <button id="devCancel" class="dev-btn ghost">Cancel</button>
+        <button id="devSubmit" class="dev-btn primary">Unlock</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const DEV_PASSWORD = "ADITYA123";
+
+    function goWithConsent(mode){
+      window.location.href = `consent.html?mode=${encodeURIComponent(mode)}`;
+    }
+
+    const secretBtn = document.getElementById('secretDev');
+    const overlay = document.getElementById('devOverlay');
+    const passInput = document.getElementById('devPassword');
+    const btnCancel = document.getElementById('devCancel');
+    const btnSubmit = document.getElementById('devSubmit');
+
+    secretBtn.addEventListener('click', () => {
+      overlay.classList.add('show');
+      passInput.value = '';
+      passInput.focus();
+    });
+
+    btnCancel.addEventListener('click', () => {
+      overlay.classList.remove('show');
+      passInput.value = '';
+    });
+
+    passInput.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter') submitDevPass();
+      if(e.key === 'Escape') overlay.classList.remove('show');
+    });
+
+    btnSubmit.addEventListener('click', submitDevPass);
+
+    function submitDevPass(){
+      if(passInput.value === DEV_PASSWORD){
+        overlay.classList.remove('show');
+        window.location.href = 'devmode.html';
+      } else {
+        alert('Access Denied ⚠️');
+        passInput.value = '';
+      }
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if(e.ctrlKey && e.altKey && (e.key === 'd' || e.key === 'D')){
+        overlay.classList.add('show');
+        passInput.value = '';
+        passInput.focus();
+      }
+    });
+  </script>
+</body>
+</html>
