@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Gifté+ — Manual Mode</title>
+  <style>
+    :root{
+      --bg: linear-gradient(135deg,#fff0f8 0%,#ffe6f2 30%,#fff0ff 60%,#f0f5ff 100%);
+      --accent-1: #ff6fa3;
+      --accent-2: #8b5cf6;
+      --muted: #6b7280;
+      --card: #ffffff;
+      --radius:16px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:var(--bg);color:#0f172a;-webkit-font-smoothing:antialiased}
+    .wrap{max-width:1100px;margin:28px auto;padding:20px}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:56px;height:56px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:800;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));color:white;box-shadow:0 14px 40px rgba(139,92,246,0.12)}
+    h1{margin:0;font-size:20px}
+    .subtitle{color:var(--muted);font-size:13px}
+    .grid{display:grid;grid-template-columns:1fr 420px;gap:20px;margin-top:20px}
+    @media(max-width:980px){ .grid{grid-template-columns:1fr;} .rightColumn{order:2} }
+    .panel{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:0 10px 30px rgba(15,23,42,0.06)}
+    label{display:block;margin-top:12px;color:var(--muted);font-size:13px}
+    select,input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #eef2ff;margin-top:8px;font-size:14px}
+    .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+    .chip{padding:8px 10px;border-radius:999px;background:linear-gradient(90deg,rgba(139,92,246,0.08),rgba(255,111,163,0.06));border:1px solid rgba(139,92,246,0.06);cursor:pointer;font-size:13px}
+    .chip.active{background:linear-gradient(90deg,var(--accent-1),var(--accent-2));color:white;border:0;box-shadow:0 8px 30px rgba(139,92,246,0.12)}
+    .row{display:flex;gap:12px}
+    .row .col{flex:1}
+    .btn{display:inline-block;padding:12px 16px;border-radius:12px;border:0;background:linear-gradient(90deg,var(--accent-2),var(--accent-1));color:white;font-weight:700;cursor:pointer;margin-top:14px}
+    .btn.secondary{background:transparent;border:1px solid rgba(15,23,42,0.06);color:var(--muted);font-weight:600}
+    .hint{font-size:13px;color:var(--muted);margin-top:8px}
+
+    /* Results grid & cards */
+    .resultHeader{display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .resultGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:12px}
+    @media(max-width:820px){ .resultGrid{grid-template-columns:1fr} }
+    .giftCard{background:linear-gradient(180deg,rgba(255,255,255,0.95),#fff);border-radius:14px;padding:14px;box-shadow:0 12px 30px rgba(15,23,42,0.06);overflow:hidden;transform:translateY(6px);opacity:0;transition:transform .35s ease,opacity .35s ease}
+    .giftCard.show{transform:translateY(0);opacity:1}
+    .giftTop{display:flex;gap:12px;align-items:center}
+    .giftThumb{width:72px;height:72px;border-radius:10px;flex-shrink:0;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));display:flex;align-items:center;justify-content:center;color:white;font-weight:800}
+    .giftTitle{font-size:16px;margin:0}
+    .giftMeta{font-size:13px;color:var(--muted);margin-top:6px}
+    .smallBadge{display:inline-block;padding:6px 8px;border-radius:8px;background:rgba(15,23,42,0.04);font-size:12px;color:var(--muted);margin-top:8px}
+    .resultNote{margin-top:10px;font-size:14px;color:#0f172a;font-weight:600}
+    .happy{margin-top:16px;padding:14px;border-radius:12px;background:linear-gradient(90deg,#fff7fb,#fffefc);text-align:center;box-shadow:0 10px 30px rgba(255,111,163,0.06)}
+    .savedMsg{font-size:13px;color:var(--muted);margin-top:8px}
+    .controls{display:flex;gap:10px;align-items:center;margin-top:12px}
+    .clearBtn{background:transparent;border:1px dashed rgba(15,23,42,0.06);padding:8px 10px;border-radius:8px;cursor:pointer;color:var(--muted)}
+
+    /* small footer */
+    footer{margin-top:26px;text-align:center;color:var(--muted);font-size:13px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo">G+</div>
+        <div>
+          <h1>Gifté+ — Manual Mode</h1>
+          <div class="subtitle">Answer a few quick questions. We'll recommend curated gifts — no external AI required.</div>
+        </div>
+      </div>
+      <div class="subtitle">Signed-in: <strong id="signedEmail">(local)</strong></div>
+    </div>
+
+    <div class="grid">
+      <!-- LEFT: form + results -->
+      <div>
+        <div class="panel" id="formPanel" aria-labelledby="formTitle">
+          <h2 id="formTitle" style="margin:0">Tell us about the recipient</h2>
+          <p class="hint">Fill the required fields (Budget, Occasion, Relationship). Select interests (can choose multiple).</p>
+
+          <label>Budget (INR) — required</label>
+          <select id="budget" required>
+            <option value="">Select budget</option>
+            <option value="1000">Under ₹1000</option>
+            <option value="5000">₹1000–₹5000</option>
+            <option value="10000">₹5000–₹10000</option>
+            <option value="20000">₹10000–₹20000</option>
+            <option value="50000">₹20000+</option>
+          </select>
+
+          <label>Occasion — required</label>
+          <select id="occasion" required>
+            <option value="">Choose occasion</option>
+            <option>Birthday</option>
+            <option>Anniversary</option>
+            <option>Graduation</option>
+            <option>Farewell</option>
+            <option>Wedding</option>
+            <option>Baby Shower</option>
+            <option>Festival</option>
+            <option>Just Because</option>
+            <option>Valentine's</option>
+          </select>
+
+          <label>Relationship — required</label>
+          <select id="relationship" required>
+            <option value="">Choose relationship</option>
+            <option>Partner</option>
+            <option>Daughter</option>
+            <option>Son</option>
+            <option>Friend</option>
+            <option>Parent</option>
+            <option>Sibling</option>
+            <option>Colleague</option>
+            <option>Teacher</option>
+            <option>Child</option>
+          </select>
+
+          <label>Interests — choose any (click chips)</label>
+          <div class="chips" id="interests"></div>
+
+          <label>Additional notes (optional)</label>
+          <textarea id="notes" rows="3" placeholder="Short note: favourite color, allergy, etc."></textarea>
+
+          <div class="controls">
+            <button id="findBtn" class="btn">Find My Gift 🎁</button>
+            <button id="saveBtn" class="btn secondary">Save Session</button>
+            <button id="clearBtn" class="clearBtn">Clear</button>
+          </div>
+
+          <div class="hint" id="formError" style="display:none;color:#c92a2a"></div>
+        </div>
+
+        <div class="panel" id="resultsPanel" style="margin-top:16px">
+          <div class="resultHeader">
+            <div>
+              <div style="font-weight:700">Recommendations</div>
+              <div class="smallBadge" id="matchSummary">No results yet</div>
+            </div>
+            <div class="hint">Top matches appear below. Click a card to mark as favourite.</div>
+          </div>
+
+          <div class="resultGrid" id="resultGrid" style="margin-top:10px"></div>
+
+          <div id="fallback" style="display:none;margin-top:12px;color:var(--muted)"> No exact matches — showing versatile picks instead. </div>
+          <div class="happy" id="happyMsg" style="display:none"> ✨ We’re happy you found your gift with Gifté+! Save or refine for more ideas. </div>
+        </div>
+      </div>
+
+      <!-- RIGHT column: quick picks / saved -->
+      <div class="rightColumn">
+        <div class="panel">
+          <h3 style="margin:0">Quick Filters & Popular Interests</h3>
+          <div class="hint">Tap chips to toggle interests quickly.</div>
+          <div style="margin-top:12px" id="quickChips"></div>
+
+          <h4 style="margin-top:18px">Saved Sessions</h4>
+          <div id="savedList" style="margin-top:8px;font-size:14px;color:var(--muted)">(none yet)</div>
+
+          <h4 style="margin-top:18px">How this works</h4>
+          <div class="hint" style="font-size:13px"> Results are ranked by tag matches (occasion, relationship, interests) and budget. Top 4 are shown with refined logic.</div>
+        </div>
+      </div>
+    </div>
+
+    <footer>© 2025 Gifté+. Designed by Delta-1 & Commander.</footer>
+  </div>
+
+  <script>
+    // --------------------
+    // Catalogue (expanded)
+    // --------------------
+    const catalogue = [
+      {id:'g001', title:'Personalized Leather Wallet', tags:['Birthday','Father','Parent','Colleague','Gadgets','Fashion','Just Because','Wallet'], minPrice:500, maxPrice:1500, short:'Classic leather wallet with initials.'},
+      {id:'g002', title:'Handmade Ceramic Mug Set', tags:['Birthday','Friend','Mother','Parent','Home & Kitchen','Just Because','Mugs','Books'], minPrice:400, maxPrice:1200, short:'Cozy mug pair — great with a note.'},
+      {id:'g003', title:'Bluetooth Earbuds', tags:['Birthday','Teen','Son','Daughter','Gadgets','Music','Tech'], minPrice:1200, maxPrice:6000, short:'True wireless earbuds with good sound.'},
+      {id:'g004', title:'Instant Camera (Polaroid)', tags:['Birthday','Friend','Partner','Photography','Travel','Just Because','Memories'], minPrice:3000, maxPrice:12000, short:'Instant prints for memories.'},
+      {id:'g005', title:'Custom Name Necklace', tags:['Anniversary','Partner','Valentine\'s','Jewelry','Personalized','Romantic'], minPrice:800, maxPrice:7000, short:'Gold/rose-gold plated personalized name necklace.'},
+      {id:'g006', title:'Experience Gift Voucher (Spa)', tags:['Anniversary','Partner','Parent','Experience','Luxury','Relaxation'], minPrice:2500, maxPrice:15000, short:'Spa day voucher — relaxation guaranteed.'},
+      {id:'g007', title:'Designer Scented Candle Set', tags:['Housewarming','Friend','Home & Kitchen','Aesthetic','Relaxation'], minPrice:700, maxPrice:2500, short:'Luxury candle set with soothing aromas.'},
+      {id:'g008', title:'Portable Power Bank', tags:['Travel','Tech','Son','Daughter','Gadgets','Colleague'], minPrice:800, maxPrice:3000, short:'High-capacity power bank for travel.'},
+      {id:'g009', title:'Smartwatch (Entry)', tags:['Birthday','Fitness','Gadgets','Teen','Adult','Sports'], minPrice:2500, maxPrice:12000, short:'Fitness tracking & notifications.'},
+      {id:'g010', title:'Premium Planner & Pen Set', tags:['Graduation','Colleague','Teacher','Stationery','Productivity'], minPrice:500, maxPrice:4000, short:'Leather planner and a classy pen.'},
+      {id:'g011', title:'Artisan Chocolate Box', tags:['Valentine\'s','Birthday','Just Because','Food & Drink','Sweet'], minPrice:300, maxPrice:2000, short:'Handcrafted chocolates.'},
+      {id:'g012', title:'Smart Home Bulb Kit', tags:['Housewarming','Home & Kitchen','Tech','Gadgets'], minPrice:1200, maxPrice:4500, short:'Smart bulbs — control mood lighting.'},
+      {id:'g013', title:'Cooking Class Experience', tags:['Birthday','Partner','Food & Drink','Experience','Learning'], minPrice:1500, maxPrice:8000, short:'Hands-on cooking workshop.'},
+      {id:'g014', title:'Designer Scarf', tags:['Anniversary','Mother','Daughter','Fashion','Aesthetic'], minPrice:800, maxPrice:6000, short:'Silk-blend designer scarf.'},
+      {id:'g015', title:'Noise-Cancelling Headphones', tags:['Travel','Music','Gadgets','Partner','Teen','Adult'], minPrice:5000, maxPrice:35000, short:'Premium listening experience.'},
+      {id:'g016', title:'LEGO Advanced Set', tags:['Birthday','Child','Toys & Games','Hobby','Creative'], minPrice:1500, maxPrice:8000, short:'Complex LEGO architecture set.'},
+      {id:'g017', title:'Fitness Gift Pack', tags:['Fitness','Sports','Son','Daughter','Birthday','Health'], minPrice:800, maxPrice:7000, short:'Yoga mat + resistance bands + water bottle.'},
+      {id:'g018', title:'E-Reader (basic)', tags:['Books','Birthday','Parent','Teacher','Reader','Education'], minPrice:4000, maxPrice:15000, short:'Lightweight e-reader for book lovers.'},
+      {id:'g019', title:'Stylish Desk Lamp', tags:['Home & Kitchen','Work From Home','Colleague','Student'], minPrice:900, maxPrice:3500, short:'LED desk lamp with adjustable brightness.'},
+      {id:'g020', title:'Sustainable Plant Kit', tags:['Housewarming','Aesthetic','Home & Kitchen','Gardening','Just Because'], minPrice:400, maxPrice:2500, short:'Indoor plant + care kit.'},
+      {id:'g021', title:'Premium Tea/Coffee Sampler', tags:['Food & Drink','Colleague','Parent','Birthday'], minPrice:500, maxPrice:2500, short:'Sampler of premium blends.'},
+      {id:'g022', title:'Personalized Photo Frame', tags:['Anniversary','Wedding','Partner','Friend','Memories'], minPrice:300, maxPrice:1500, short:'Custom engraved photo frame.'},
+      {id:'g023', title:'Portable Projector (mini)', tags:['Home & Kitchen','Entertainment','Partner','Friend'], minPrice:3500, maxPrice:25000, short:'Mini projector for movie nights.'},
+      {id:'g024', title:'Handmade Jewellery Box', tags:['Wedding','Anniversary','Jewelry','Mother','Keepsake'], minPrice:1200, maxPrice:6000, short:'Beautiful wooden/jewellery box.'},
+      {id:'g025', title:'Board Game (Strategy)', tags:['Friend','Family','Games','Birthday','Social'], minPrice:900, maxPrice:3500, short:'Popular strategy board game for groups.'},
+      {id:'g026', title:'Subscription Box (monthly)', tags:['Just Because','Birthday','Surprise','Hobby'], minPrice:700, maxPrice:5000, short:'Curated monthly box (books/snacks/selfcare).'},
+      {id:'g027', title:'Luxury Skincare Set', tags:['Beauty','Mother','Partner','Anniversary','Selfcare'], minPrice:1200, maxPrice:12000, short:'Premium skincare essentials.'},
+      {id:'g028', title:'Custom Illustration Portrait', tags:['Birthday','Anniversary','Partner','Friend','Art'], minPrice:1000, maxPrice:8000, short:'Hand-drawn custom portrait.'},
+      {id:'g029', title:'High-quality Backpack', tags:['Travel','Student','Colleague','Son','Daughter'], minPrice:1500, maxPrice:8000, short:'Durable backpack for daily use.'},
+      {id:'g030', title:'Kids Storybook Bundle', tags:['Child','Birthday','Books','Education'], minPrice:400, maxPrice:2000, short:'Curated storybooks for kids.'},
+      {id:'g031', title:'Gourmet Gift Hamper', tags:['Festival','Wedding','Parent','Food & Drink','Celebration'], minPrice:1500, maxPrice:10000, short:'Luxury hamper of treats.'},
+      {id:'g032', title:'Stylish Sunglasses', tags:['Fashion','Partner','Friend','Birthday'], minPrice:800, maxPrice:9000, short:'Trending sunglasses with UV protection.'},
+      {id:'g033', title:'Portable Espresso Maker', tags:['Coffee','Food & Drink','Partner','Travel'], minPrice:2500, maxPrice:12000, short:'Make espresso on the go.'},
+      {id:'g034', title:'Thermal Insulated Bottle (Premium)', tags:['Fitness','Travel','Eco','Son','Daughter'], minPrice:600, maxPrice:3000, short:'Keeps drinks hot/cold for hours.'},
+      {id:'g035', title:'Handcrafted Journal', tags:['Writer','Stationery','Teacher','Student','Anniversary'], minPrice:300, maxPrice:2000, short:'Beautiful leather-bound journal.'},
+      {id:'g036', title:'Designer Phone Case', tags:['Gadgets','Fashion','Teen','Friend'], minPrice:300, maxPrice:2500, short:'Stylish protective phone case.'},
+      {id:'g037', title:'Mini Indoor Grill', tags:['Home & Kitchen','Food & Drink','Parent','Gift'], minPrice:2000, maxPrice:12000, short:'Compact grill for balcony cooking.'},
+      {id:'g038', title:'DIY Craft Kit', tags:['Hobby','Child','Creative','Just Because'], minPrice:300, maxPrice:2500, short:'Fun DIY kit for creative time.'},
+      {id:'g039', title:'Wireless Charging Pad', tags:['Gadgets','Office','Colleague','Tech'], minPrice:700, maxPrice:4000, short:'Convenient wireless charger.'},
+      {id:'g040', title:'Luxury Watch (affordable)', tags:['Anniversary','Partner','Luxury','Fashion'], minPrice:8000, maxPrice:50000, short:'Classic wristwatch.'},
+      {id:'g041', title:'Personalized Recipe Book', tags:['Food & Drink','Parent','Friend','Home & Kitchen'], minPrice:500, maxPrice:3000, short:'Custom recipe book with family recipes.'},
+      {id:'g042', title:'Portable Karaoke Mic', tags:['Entertainment','Friend','Party','Music'], minPrice:900, maxPrice:3500, short:'Wireless karaoke mic for parties.'},
+      {id:'g043', title:'Kids Educational Tablet (kid mode)', tags:['Child','Education','Toys & Games'], minPrice:3500, maxPrice:12000, short:'Kid-safe tablet with learning apps.'},
+      {id:'g044', title:'Scratch-off Travel Map', tags:['Travel','Friend','Partner','Adventure'], minPrice:400, maxPrice:1800, short:'Map to track places visited.'},
+      {id:'g045', title:'Customized Pet Portrait', tags:['Pet Owner','Friend','Anniversary','Art'], minPrice:700, maxPrice:5000, short:'Illustration of their pet.'},
+      {id:'g046', title:'Premium Cheese Board', tags:['Hosting','Home & Kitchen','Gift','Friend'], minPrice:800, maxPrice:6000, short:'Elegant cheese & charcuterie board set.'},
+      {id:'g047', title:'Compact Multi-tool', tags:['Travel','Adventure','Son','Dad','Gadget'], minPrice:500, maxPrice:3000, short:'Useful multi-tool for outdoors.'},
+      {id:'g048', title:'Online Course Gift Card', tags:['Education','Graduation','Career','Selfcare'], minPrice:500, maxPrice:20000, short:'Gift a course subscription.'},
+      {id:'g049', title:'Hand-stitched Quilt / Throw', tags:['Home & Kitchen','Mother','Anniversary','Cozy'], minPrice:2000, maxPrice:15000, short:'Warm, handmade throw.'},
+      {id:'g050', title:'Custom Engraved Pen', tags:['Graduation','Colleague','Teacher','Stationery'], minPrice:400, maxPrice:3500, short:'Engraved metal pen — keepsake.'},
+      {id:'g051', title:'Compact Air Fryer', tags:['Home & Kitchen','Parent','Food & Drink','Gadget'], minPrice:3000, maxPrice:12000, short:'Easy, healthy cooking.'},
+      {id:'g052', title:'Smart Garden (Indoor)', tags:['Gardening','Home & Kitchen','Aesthetic','Eco'], minPrice:2500, maxPrice:15000, short:'Self-watering indoor herb garden.'},
+      {id:'g053', title:'Scented Bath Bomb Set', tags:['Selfcare','Relaxation','Mother','Partner','Beauty'], minPrice:300, maxPrice:1500, short:'Relaxing spa bath set.'},
+      {id:'g054', title:'Portable Photo Printer', tags:['Photography','Travel','Memories','Friend'], minPrice:3500, maxPrice:10000, short:'Print phone photos instantly.'},
+      {id:'g055', title:'Vinyl Record Starter Kit', tags:['Music','Hobby','Retro','Friend'], minPrice:3000, maxPrice:15000, short:'Turntable + a few records.'},
+      {id:'g056', title:'Travel Packing Cubes Set', tags:['Travel','Organizing','Partner','Friend'], minPrice:700, maxPrice:3000, short:'Keep luggage tidy and compact.'},
+      {id:'g057', title:'Luxury Bedding Set (Queen)', tags:['Home & Kitchen','Wedding','Anniversary','Cozy'], minPrice:5000, maxPrice:35000, short:'Soft, premium sheets and duvet.'},
+      {id:'g058', title:'Portable Bluetooth Speaker', tags:['Music','Travel','Party','Friend'], minPrice:900, maxPrice:8000, short:'Small speaker with punchy audio.'},
+      {id:'g059', title:'Language Learning Subscription', tags:['Education','Career','Gift','Graduation'], minPrice:600, maxPrice:12000, short:'Months of language lessons.'},
+      {id:'g060', title:'Eco Starter Kit', tags:['Eco','Home & Kitchen','Sustainable','Friend'], minPrice:500, maxPrice:4000, short:'Reusable products + starter guide.'}
+    ];
+
+    // --------------------
+    // Interests
+    // --------------------
+    const allInterests = [
+      'Tech','Music','Books','Fashion','Home & Kitchen','Food & Drink','Travel','Fitness','Photography','Art',
+      'Gaming','Beauty','Gardening','Parenting','Kids','Sports','DIY','Hobby','Stationery','Pet Owner'
+    ];
+
+    // --------------------
+    // UI references
+    // --------------------
+    const interestsDiv = document.getElementById('interests');
+    const quickChips = document.getElementById('quickChips');
+    const resultGrid = document.getElementById('resultGrid');
+    const matchSummary = document.getElementById('matchSummary');
+    const findBtn = document.getElementById('findBtn');
+    const saveBtn = document.getElementById('saveBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const budgetEl = document.getElementById('budget');
+    const occasionEl = document.getElementById('occasion');
+    const relationshipEl = document.getElementById('relationship');
+    const notesEl = document.getElementById('notes');
+    const formError = document.getElementById('formError');
+    const savedList = document.getElementById('savedList');
+    const happyMsg = document.getElementById('happyMsg');
+    const signedEmail = document.getElementById('signedEmail');
+
+    signedEmail.innerText = localStorage.getItem('aditya_signed_email') || '(local)';
+
+    // --------------------
+    // Helpers
+    // --------------------
+    function createChip(name, parent, initial=false){
+      const el = document.createElement('div');
+      el.className = 'chip';
+      el.innerText = name;
+      el.dataset.tag = name;
+      if(initial) el.classList.add('active');
+      el.addEventListener('click', ()=> el.classList.toggle('active'));
+      parent.appendChild(el);
+    }
+
+    allInterests.forEach(i => createChip(i, interestsDiv));
+    allInterests.slice(0,8).forEach(i => createChip(i, quickChips));
+
+    function getSelectedInterests(){
+      return Array.from(interestsDiv.querySelectorAll('.chip.active')).map(c=>c.dataset.tag);
+    }
+
+    function budgetUpper(value){
+      if(!value) return Infinity;
+      const n = Number(value);
+      if(n === 1000) return 1000;
+      if(n === 5000) return 5000;
+      if(n === 10000) return 10000;
+      if(n === 20000) return 20000;
+      if(n === 50000) return 1000000;
+      return 1000000;
+    }
+
+    // --------------------
+    // Advanced scoring logic
+    // --------------------
+    function scoreItemComplex(item, selections){
+      let score = 0;
+      const {occasion, relationship, interests, budget, notes} = selections;
+
+      // strong matches
+      if(item.tags.includes(occasion)) score += 8;
+      if(item.tags.includes(relationship)) score += 6;
+
+      // interest matches
+      for(const it of interests){ if(item.tags.includes(it)) score += 4; }
+
+      // budget fit
+      const up = budgetUpper(budget);
+      if(item.maxPrice <= up) score += 6; // comfortably fits
+      else if(item.minPrice <= up && item.maxPrice > up) score += 2; // partly fits
+      else score -= 8; // too expensive
+
+      // Occasion/relationship special rules (deeper if/else combos)
+      // Partner romantic thrust
+      if(relationship === 'Partner'){
+        if(occasion === 'Anniversary' || occasion === 'Valentine\'s'){
+          if(item.tags.includes('Romantic') || item.tags.includes('Jewelry') || item.tags.includes('Experience')) score += 8;
+        }
+        // Partner + travel interest
+        if(interests.includes('Travel') && item.tags.includes('Travel')) score += 5;
+      }
+
+      // Friend: fun & social
+      if(relationship === 'Friend'){
+        if(item.tags.includes('Fun') || item.tags.includes('Party') || item.tags.includes('Games')) score += 4;
+        if(occasion === 'Farewell' && item.tags.includes('Colleague')) score += 3;
+      }
+
+      // Parent: comfort and practical
+      if(relationship === 'Parent'){
+        if(item.tags.includes('Home & Kitchen') || item.tags.includes('Relaxation') || item.tags.includes('Health')) score += 6;
+      }
+
+      // Child: learning + toys
+      if(['Child','Son','Daughter'].includes(relationship)){
+        if(item.tags.includes('Toys & Games') || item.tags.includes('Education') || item.tags.includes('Child')) score += 6;
+      }
+
+      // Occasion-specific boosts
+      if(occasion === 'Birthday') score += 3;
+      if(occasion === 'Graduation' && item.tags.includes('Education')) score += 6;
+      if(occasion === 'Wedding' && item.tags.includes('Wedding')) score += 6;
+      if(occasion === 'Baby Shower' && item.tags.includes('Parent')) score += 5;
+
+      // Notes hint (if user wrote something like "coffee" or "books")
+      if(notes){
+        const n = notes.toLowerCase();
+        if(n.includes('book') && item.tags.includes('Books')) score += 6;
+        if(n.includes('coffee') && item.tags.includes('Coffee')) score += 5;
+        if(n.includes('travel') && item.tags.includes('Travel')) score += 4;
+      }
+
+      // small tie-breaker and diversity
+      score += Math.random();
+      return score;
+    }
+
+    // --------------------
+    // Find gifts (complex)
+    // --------------------
+    function findGiftsComplex(){
+      formError.style.display = 'none';
+      formError.innerText = '';
+
+      const budget = budgetEl.value;
+      const occasion = occasionEl.value;
+      const relationship = relationshipEl.value;
+      const interests = getSelectedInterests();
+      const notes = notesEl.value || '';
+
+      if(!budget || !occasion || !relationship){
+        formError.style.display='block';
+        formError.innerText = 'Please fill Budget, Occasion and Relationship (required).';
+        return;
+      }
+
+      const selections = {budget, occasion, relationship, interests, notes};
+
+      // score catalogue
+      const scored = catalogue.map(item => ({item, score: scoreItemComplex(item, selections)}));
+
+      // additional business rules (if/else heavy combos)
+      // 1) very low budget combos: force small gift types
+      const up = budgetUpper(budget);
+      if(up <= 1000){
+        // demote luxury items strongly
+        scored.forEach(s => { if(s.item.minPrice > 1000) s.score -= 10; });
+      }
+
+      // 2) partner + anniversary: prefer romantic/experience/jewelry
+      if(relationship === 'Partner' && (occasion === 'Anniversary' || occasion === "Valentine's")){
+        scored.forEach(s => { if(s.item.tags.includes('Romantic') || s.item.tags.includes('Jewelry') || s.item.tags.includes('Experience')) s.score += 6; });
+      }
+
+      // 3) graduation + student: prefer productivity/education
+      if(occasion === 'Graduation'){
+        scored.forEach(s => { if(s.item.tags.includes('Education') || s.item.tags.includes('Productivity') || s.item.tags.includes('Stationery')) s.score += 5; });
+      }
+
+      // 4) gift diversity: ensure not all same category — we will pick best per cluster
+      scored.sort((a,b)=>b.score - a.score);
+
+      // cluster: pick top from different broad categories (simple heuristic using first tag)
+      const picked = [];
+      const seen = new Set();
+      for(const s of scored){
+        const cat = (s.item.tags[0] || 'misc').toLowerCase();
+        if(!seen.has(cat)){
+          if(s.item.minPrice <= up || (s.item.minPrice > up && picked.length < 2)){
+            picked.push(s.item);
+            seen.add(cat);
+          }
+        }
+        if(picked.length >= 4) break;
+      }
+
+      // fallback: if not enough, fill with highest scoring items that fit budget or close fit
+      if(picked.length < 4){
+        for(const s of scored){
+          if(!picked.includes(s.item) && (s.item.minPrice <= up || picked.length < 2)){
+            picked.push(s.item);
+          }
+          if(picked.length >= 4) break;
+        }
+      }
+
+      // in extreme case, pull first 4 catalogue items
+      if(picked.length === 0) picked.push(...catalogue.slice(0,4));
+
+      renderResults(picked, selections);
+      localStorage.setItem('last_query_manual', JSON.stringify({selections, ts: new Date().toISOString()}));
+      logEvent('manual','search', {selections});
+    }
+
+    // --------------------
+    // Render results (card format)
+    // --------------------
+    function renderResults(list, selections){
+      resultGrid.innerHTML = '';
+      matchSummary.innerText = `${list.length} suggestions • ${selections.occasion}/${selections.relationship}`;
+      happyMsg.style.display = 'none';
+      document.getElementById('fallback').style.display = 'none';
+
+      list.forEach((g, idx)=>{
+        const div = document.createElement('div');
+        div.className = 'giftCard';
+
+        setTimeout(()=> div.classList.add('show'), 60*idx);
+
+        const priceText = priceLabel(g);
+        const tags = g.tags.slice(0,5).join(', ');
+
+        div.innerHTML = `
+          <div class="giftTop">
+            <div class="giftThumb">${(g.title.split(' ').slice(0,2).map(w=>w[0]||'').join('')).toUpperCase()}</div>
+            <div style="flex:1">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start">
+                <div>
+                  <h4 class="giftTitle">${g.title}</h4>
+                  <div class="giftMeta">${g.short}</div>
+                </div>
+                <div style="text-align:right">
+                  <div style="font-weight:800">${priceText}</div>
+                  <div class="smallBadge">${g.tags[0] || ''}</div>
+                </div>
+              </div>
+              <div class="hint" style="margin-top:10px;font-size:13px;color:var(--muted)">Tags: ${tags}</div>
+            </div>
+          </div>
+        `;
+
+        // click to favourite
+        div.addEventListener('click', ()=>{ toggleFavourite(g.id); div.style.outline = '3px solid rgba(139,92,246,0.12)'; });
+
+        resultGrid.appendChild(div);
+      });
+
+      setTimeout(()=> { happyMsg.style.display = 'block'; }, 400);
+    }
+
+    function priceLabel(g){
+      const min = g.minPrice, max = g.maxPrice;
+      if(min >= 20000) return `₹${min.toLocaleString()}+`;
+      if(min === max) return `₹${min}`;
+      return `₹${min.toLocaleString()}–₹${max.toLocaleString()}`;
+    }
+
+    // --------------------
+    // Save / Favourites / Helpers
+    // --------------------
+    function saveSession(){
+      const budget = budgetEl.value, occasion = occasionEl.value, relationship = relationshipEl.value;
+      if(!budget || !occasion || !relationship){ alert('Fill required fields before saving.'); return; }
+      const session = { budget, occasion, relationship, interests: getSelectedInterests(), notes: notesEl.value, ts: new Date().toISOString() };
+      const arr = JSON.parse(localStorage.getItem('gift_manual_sessions') || '[]'); arr.push(session); localStorage.setItem('gift_manual_sessions', JSON.stringify(arr)); renderSaved(); alert('Session saved locally.');
+    }
+
+    function renderSaved(){
+      const arr = JSON.parse(localStorage.getItem('gift_manual_sessions') || '[]');
+      if(arr.length === 0){ savedList.innerText = '(none yet)'; return; }
+      savedList.innerHTML = arr.slice(-6).reverse().map((s)=>{
+        return `<div style="padding:8px;border-radius:8px;margin-bottom:8px;background:linear-gradient(90deg,#fff,#fffefc);text-align:left">
+          <div style="font-weight:700">${s.occasion} • ₹${Number(s.budget).toLocaleString()}</div>
+          <div style="font-size:13px;color:var(--muted)">${s.relationship} • ${s.interests.slice(0,3).join(', ')}</div>
+        </div>`;
+      }).join('');
+    }
+
+    function clearForm(){
+      budgetEl.value = ''; occasionEl.value = ''; relationshipEl.value = ''; notesEl.value = ''; interestsDiv.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+      resultGrid.innerHTML = ''; matchSummary.innerText = 'No results yet'; happyMsg.style.display='none';
+    }
+
+    function toggleFavourite(id){
+      const fav = JSON.parse(localStorage.getItem('gift_favourites') || '[]');
+      if(fav.includes(id)) { localStorage.setItem('gift_favourites', JSON.stringify(fav.filter(x=>x!==id))); alert('Removed favourite.'); }
+      else { fav.push(id); localStorage.setItem('gift_favourites', JSON.stringify(fav)); alert('Marked favourite.'); }
+    }
+
+    function logEvent(type, action, meta={}){ const cur = JSON.parse(localStorage.getItem('gift_logs') || '[]'); cur.push({ts: new Date().toISOString(), type, action, meta}); localStorage.setItem('gift_logs', JSON.stringify(cur)); }
+
+    // --------------------
+    // Wire up events
+    // --------------------
+    findBtn.addEventListener('click', findGiftsComplex);
+    saveBtn.addEventListener('click', saveSession);
+    clearBtn.addEventListener('click', ()=>{ if(confirm('Clear form and results?')) clearForm(); });
+
+    window.addEventListener('load', ()=>{
+      renderSaved();
+      const last = JSON.parse(localStorage.getItem('last_query_manual') || 'null');
+      // preselect example interests
+      const pre = ['Tech','Books'];
+      interestsDiv.querySelectorAll('.chip').forEach(c=>{ if(pre.includes(c.dataset.tag)) c.classList.add('active'); });
+    });
+
+    notesEl.addEventListener('keydown', (e)=> { if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); findGiftsComplex(); } });
+  </script>
+</body>
+</html>
